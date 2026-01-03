@@ -1,0 +1,36 @@
+services:
+  easyrsa:
+    image: "challenge1_easyrsa"
+    container_name: "challenge1_easyrsa"
+    build:
+      context: "easyrsa"
+    volumes:
+      - "./easyrsa/ca:/ca:rw"
+    network_mode: none
+
+  openvpn:
+    image: "challenge1_openvpn"
+    container_name: "challenge1_openvpn"
+    build:
+      context: "openvpn"
+    volumes:
+      - "./openvpn/config:/etc/openvpn"
+    networks:
+      - "challenge1"
+    ports:
+      - "1194:1194/udp"
+    restart: always
+    cap_add:
+      - "NET_ADMIN"
+    devices:
+      - "/dev/net/tun"
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv6.conf.all.forwarding: "1"
+
+networks:
+  challenge1:
+    name: "challenge1"
+    driver: "bridge"
+    external: false
+    internal: false
