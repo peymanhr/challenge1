@@ -1,7 +1,19 @@
 services:
+
+  redis:
+    image: "redis:8.2.3-alpine3.22"
+    container_name: "${COMPOSE_PROJECT_NAME}_redis"
+    networks:
+      - "network"
+    restart: always
+    command: 'redis-server --save "" --appendonly no --loglevel warning --requirepass "$REDIS_PASSWORD"'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+
   easyrsa:
-    image: "challenge1_easyrsa"
-    container_name: "challenge1_easyrsa"
+    image: "${COMPOSE_PROJECT_NAME}_easyrsa"
+    container_name: "${COMPOSE_PROJECT_NAME}_easyrsa"
     build:
       context: "easyrsa"
     volumes:
@@ -9,17 +21,21 @@ services:
     network_mode: none
 
   openvpn:
-    image: "challenge1_openvpn"
-    container_name: "challenge1_openvpn"
+    image: "${COMPOSE_PROJECT_NAME}_openvpn"
+    container_name: "${COMPOSE_PROJECT_NAME}_openvpn"
     build:
       context: "openvpn"
     volumes:
       - "./openvpn/config:/etc/openvpn"
     networks:
-      - "challenge1"
+      - "network"
     ports:
       - "1194:1194/udp"
     restart: always
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: "${COMPOSE_PROJECT_NAME}_redis"
+      REDIS_PORT: 6343
     cap_add:
       - "NET_ADMIN"
     devices:
@@ -29,8 +45,8 @@ services:
       net.ipv6.conf.all.forwarding: "1"
 
 networks:
-  challenge1:
-    name: "challenge1"
+  network:
+    name: ${COMPOSE_PROJECT_NAME}
     driver: "bridge"
     external: false
     internal: false
