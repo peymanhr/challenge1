@@ -10,4 +10,7 @@ docker compose up -d
 ```
 
 ## Client config
+
+Replace **\<hostname\>** with your server IP or FQDN in *client.ovpn*.
+
 [client.ovpn](client.ovpn)
